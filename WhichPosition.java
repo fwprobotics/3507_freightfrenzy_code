@@ -18,7 +18,7 @@ public class WhichPosition extends OpenCvPipeline {
     }
 
         //Defines dimensions for all boxes
-        final int REGION_WIDTH = 25;
+        final int REGION_WIDTH = 60;
         final int REGION_HEIGHT = 40;
 
         //Defines starting points for the first box
@@ -66,7 +66,7 @@ public class WhichPosition extends OpenCvPipeline {
             BOX2_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
         
         //Sets bounds on the hue (you can add parameters for the other stuff)
-        int HueMin = 53;
+        int HueMin = 30;
         int HueMax = 75;
     
         //Defines red color to draw box with
