@@ -26,8 +26,8 @@ public class RedRightTest extends LinearOpMode {
     Integer gearratio = 80;
     Double diameter = 4.125;
     Double cpi = (cpr * gearratio)/(Math.PI * diameter); //counts per inch, 28cpr * gear ratio / (2 * pi * diameter (in inches, in the center))
-    Double bias = 0.8;//default 0.8
-    Double meccyBias = 0.9;//change to adjust only strafing movement
+   Double bias = 0.516;//default 0.8
+    Double meccyBias = 0.558;//change to adjust only strafing movement
     //
     Double conversion = cpi * bias;
     Boolean exit = false;
@@ -40,28 +40,30 @@ public class RedRightTest extends LinearOpMode {
         //
         initGyro();
         //
-        frontleft = hardwareMap.dcMotor.get("frontleft");
-        frontright = hardwareMap.dcMotor.get("frontright");
-        backleft = hardwareMap.dcMotor.get("backleft");
-        backright = hardwareMap.dcMotor.get("backright");
+        frontleft = hardwareMap.dcMotor.get("frontLeftDrive");
+        frontright = hardwareMap.dcMotor.get("frontRightDrive");
+        backleft = hardwareMap.dcMotor.get("backLeftDrive");
+        backright = hardwareMap.dcMotor.get("backRightDrive");
 
-        frontright.setDirection(DcMotorSimple.Direction.REVERSE);
-        backright.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontleft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backleft.setDirection(DcMotorSimple.Direction.REVERSE);
         //
         waitForStartify();
         //
-        strafeToPosition(-19.0, 0.2);
-	//
-	moveToPosition(22, 0.2);
-	//
-	moveToPosition(-22, 0.2);
-	//
-	strafeToPosition(50.0, 0.2);
-	//
-	moveToPosition(25, 0.2);
-	//
-	turnWithGyro(90, 0.2);
-	//
+    strafeToPosition(-11.0, 0.2);
+    //
+    moveToPosition(12, 0.2);
+    //
+    turnWithGyro(90, 0.2);
+    //
+    strafeToPosition(13, 0.2);
+    //
+    moveToPosition(26.0, 0.2);
+    //
+    strafeToPosition(-13, 0.2);
+    //
+    //turnWithGyro(90, 0.2);
+    //
     }
     //
     /*
