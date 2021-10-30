@@ -50,20 +50,20 @@ public class RedLeftTest extends LinearOpMode {
         //
         waitForStartify();
         //
-        strafeToPosition(-14.0, 0.2);
-	//
-	moveToPosition(40, 0.2);
-	//
-	turnWithGyro(90, 0.2);
-	//
-	moveToPosition(25, 0.2);
-	//
-	moveToPosition(-25, 0.2);
-	//
-	strafeToPosition(40.0, 0.2);
-	//
-	moveToPosition(92, 0.2);
-	//
+        strafeToPosition(-8.0, 0.2);
+    //
+    moveToPosition(22.5, 0.3);
+    //
+    turnWithGyro(90, 0.2);
+    //
+    moveToPosition(11, 0.2);
+    //
+    moveToPosition(-11, 0.3);
+    //
+    strafeToPosition(24.0, 0.2);
+    //
+    moveToPosition(46, 0.5);
+    //
     }
     //
     /*
