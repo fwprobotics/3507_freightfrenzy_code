@@ -13,8 +13,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@Autonomous(name="RedLeft", group="chad")
-public class RedLeft extends LinearOpMode {
+@Autonomous(name="RedLeftTest", group="chad")
+public class RedLeftTest extends LinearOpMode {
     //
     DcMotor frontleft;
     DcMotor frontright;
@@ -50,15 +50,19 @@ public class RedLeft extends LinearOpMode {
         //
         waitForStartify();
         //
-        strafeToPosition(24.0, 0.2);
+        strafeToPosition(-14.0, 0.2);
 	//
-	moveToPosition(22, 0.2);
-	//
-	moveToPosition(-22, 0.2);
-	//
-	strafeToPosition(49.0, 0.2);
+	moveToPosition(40, 0.2);
 	//
 	turnWithGyro(90, 0.2);
+	//
+	moveToPosition(25, 0.2);
+	//
+	moveToPosition(-25, 0.2);
+	//
+	strafeToPosition(40.0, 0.2);
+	//
+	moveToPosition(92, 0.2);
 	//
     }
     //
