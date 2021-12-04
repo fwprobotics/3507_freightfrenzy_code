@@ -198,7 +198,7 @@ public class RedRight extends LinearOpMode {
         // Combines the above to create a webcam that we will use
         webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
         //(Boundary between regions 1 and 2, Boundary between 2 and 3, Far left, Far top, Far right, Far bottom, opmode, the side we're on)
-        pipeline = new LoopyPipeline(175, 280, 65, 150, 310, 200, this, LoopyPipeline.Side.RED);
+        pipeline = new LoopyPipeline(175, 240, 90, 170, 280, 190, this, LoopyPipeline.Side.RED);
         webcam.setPipeline(pipeline);
 
 // Turns on the webcam

@@ -153,7 +153,7 @@ public class BlueLeft extends LinearOpMode {
             turnWithGyro(90,.5);
         } else if (cupPos == CupPosition.RIGHT) {
             //General idea here is to overshoot the arm and then come down to drop the box
-            moveToPosition(25.25, 0.2);
+            moveToPosition(25.75, 0.2);
             arm.autoPositions(Arm.autoOptions.TOP);
             claw.openClaw();
             sleep(500);
@@ -168,10 +168,10 @@ public class BlueLeft extends LinearOpMode {
         //
         strafeToPosition(27, 0.5);
         //
-        moveToPosition(-40, 0.5);
+        moveToPosition(-50, 0.5);
         //
-        strafeToPosition(-45, 0.5);
-        moveToPosition(-10, 0.5);
+        strafeToPosition(-40, 0.5);
+        moveToPosition(-5, 0.5);
         arm.autoPositions(Arm.autoOptions.GROUND);
         
         
@@ -189,7 +189,7 @@ public class BlueLeft extends LinearOpMode {
         webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
         //Sets our pipeline to view images through as the one we want
         //(Boundary between regions 1 and 2, Boundary between 2 and 3, Far left, Far top, Far right, Far bottom, opmode, the side we're on)
-        pipeline = new LoopyPipeline(65, 165, 0, 150, 250, 200, this, LoopyPipeline.Side.BLUE);
+        pipeline = new LoopyPipeline(80, 165, 30, 170, 250, 210, this, LoopyPipeline.Side.BLUE);
         webcam.setPipeline(pipeline);
 
         // Turns on the webcam

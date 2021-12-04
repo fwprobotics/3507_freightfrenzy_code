@@ -11,7 +11,7 @@ public class Claw {
         ClawServo = hardwareMap.servo.get("clawServo");
     }
     
-    boolean toggle;
+    boolean toggle = false;
     boolean pressed;
     
     public void TeleopControl(boolean press){

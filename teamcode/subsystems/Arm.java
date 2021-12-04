@@ -19,12 +19,13 @@ public class Arm{
     public Telemetry realTelemetry;
 
     public static class ArmConstants {
-        //We only run at 30% power so nothing crazy happens (this maybe should be increased though)
+        //We only run at 70% power so nothing crazy happens (this maybe should be increased though)
         public static double arm_modifier = 0.7;
+        public static double arm_power = 0.8;
         public static double arm_stall_power = 0.01;
-        public static double arm_p = 15.0;
-        public static double arm_i = 0.1;
-        public static double arm_d = 0.1;
+        public static double arm_p = 12.5;
+        public static double arm_i = 0.75;
+        public static double arm_d = 2;
         public static double arm_f = 0.00;
     }
 
@@ -80,24 +81,30 @@ public class Arm{
    // PIDSet();
   
 
-    public void teleOpControl(double input, boolean up, boolean down, boolean side){
+    public void teleOpControl(double input, boolean up, boolean down, boolean side, boolean y){
         
         if (down == true) {
-            armMotor.setTargetPosition(150);
+            armMotor.setTargetPosition(200);
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-            armMotor.setPower(.3);
+            armMotor.setPower(ArmConstants.arm_power);
                 
             
         }
           if (up == true) {
             armMotor.setTargetPosition(2250);
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-            armMotor.setPower(.3);
+            armMotor.setPower(ArmConstants.arm_power);
         }
         if (side == true){
-             armMotor.setTargetPosition(790);
+            armMotor.setTargetPosition(790);
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-            armMotor.setPower(.3);
+            armMotor.setPower(ArmConstants.arm_power);
+        }
+        
+        if (y == true) {
+            armMotor.setTargetPosition(0);
+            armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
+            armMotor.setPower(ArmConstants.arm_power);
         }
         if ((down == false) && (up == false) &! armMotor.isBusy()){
         armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -113,28 +120,29 @@ public class Arm{
         
         switch(position){
             case BOTTOM:
-                armMotor.setTargetPosition(290);
+                armMotor.setTargetPosition(375);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-                armMotor.setPower(.3);
+                armMotor.setPower(ArmConstants.arm_power);
                 break;
             case MIDDLE:
                 armMotor.setTargetPosition(660);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-                armMotor.setPower(.3);
+                armMotor.setPower(ArmConstants.arm_power);
                 break;
             case OVERSHOOT:
                 armMotor.setTargetPosition(1150);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-                armMotor.setPower(.3);
+                armMotor.setPower(ArmConstants.arm_power);
+                break;
             case TOP:
                 armMotor.setTargetPosition(780);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-                armMotor.setPower(.3);
+                armMotor.setPower(ArmConstants.arm_power);
                 break;
             case GROUND:
                 armMotor.setTargetPosition(0);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
-                armMotor.setPower(.3);
+                armMotor.setPower(ArmConstants.arm_power);
                 break;
         }
         
@@ -176,6 +184,8 @@ public class Arm{
         */
         //Makes sure the robot is not trying to do stuff while the arm is moving
        while (armMotor.isBusy()) {
+           realTelemetry.addData("Arm Encoder Count:", armMotor.getCurrentPosition());
+           realTelemetry.update();
            l.idle();
            
        }

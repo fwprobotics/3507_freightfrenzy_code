@@ -26,7 +26,7 @@ public class LoopyPipeline extends OpenCvPipeline {
         BLUE
     }
     
-    Side side;
+        Side side;
 
         //Defines dimensions for the boxes
         final int REGION_WIDTH = 10;
@@ -41,6 +41,7 @@ public class LoopyPipeline extends OpenCvPipeline {
         int starty;
         int maxx;
         int maxy;
+        int sat_threshold = 60;
 
         //Defines a Mat specifically for the first box
         Mat box1_Mat;
@@ -54,7 +55,7 @@ public class LoopyPipeline extends OpenCvPipeline {
        
 
         // Sets ideal hue
-        int HueGoal = 120;
+        int HueGoal = 110;
 
         // int to hold distance from hue goal
         int box1_deviation;
@@ -127,7 +128,7 @@ public class LoopyPipeline extends OpenCvPipeline {
 
             box1_deviation = Math.abs(box1_average_hue - HueGoal);
 
-            if (box1_deviation < min_deviation && box1_average_sat > 160){
+            if (box1_deviation < min_deviation && box1_average_sat > sat_threshold){
                 min_deviation = box1_deviation;
                 box1xfinal = box1x;
                 box1yfinal = box1y;
@@ -174,15 +175,17 @@ if (side == Side.RED) {
             
             //Defines a bunch of points that we use to draw lines that will show where we are looking
             Point line0pointA = new Point(startx, starty);
-            Point line0pointB = new Point(startx, 250);
+            Point line0pointB = new Point(startx, maxy + REGION_HEIGHT);
             Point line1pointA = new Point(line1x +REGION_WIDTH/2, starty); //Splits the difference with region width - where the box falls more is where we detect
-            Point line1pointB = new Point(line1x +REGION_WIDTH/2, 250);
+            Point line1pointB = new Point(line1x +REGION_WIDTH/2, maxy + REGION_HEIGHT);
             Point line2pointA = new Point(line2x +REGION_WIDTH/2, starty);
-            Point line2pointB = new Point(line2x +REGION_WIDTH/2, 250);
+            Point line2pointB = new Point(line2x +REGION_WIDTH/2, maxy + REGION_HEIGHT);
             Point line3pointA = new Point(startx, starty);
             Point line3pointB = new Point(maxx + REGION_WIDTH, starty);
-             Point line4pointA = new Point(maxx + REGION_WIDTH, starty);
-            Point line4pointB = new Point(maxx + REGION_WIDTH, 250); //Shows right end of box
+            Point line4pointA = new Point(maxx + REGION_WIDTH, starty);
+            Point line4pointB = new Point(maxx + REGION_WIDTH, maxy + REGION_HEIGHT); //Shows right end of box
+            Point line5pointA = new Point(startx, maxy + REGION_HEIGHT);
+            Point line5pointB = new Point(maxx + REGION_WIDTH, maxy + REGION_HEIGHT); //Shows bottom end of box
             
              
             //Draws the best box
@@ -229,9 +232,22 @@ if (side == Side.RED) {
             RED, // The color the rectangle is drawn in
             2); // Thickness of the rectangle lines
             
+            Imgproc.line(
+            inputMat, // What to draw on
+            line5pointA, // First point which defines the rectangle
+            line5pointB, // Second point which defines the rectangle
+            RED, // The color the rectangle is drawn in
+            2); // Thickness of the rectangle lines
             
+        l.telemetry.addData("Box x", box1xfinal);
+        l.telemetry.addData("Box y", box1yfinal);
+        l.telemetry.addData("Deviation", min_deviation);
+        l.telemetry.addData("Saturation", finalsat);
+        l.telemetry.addData("Hue", besthue);
+        l.telemetry.update();
         //Shows the image
         return inputMat;
+        
     }
     
 }
