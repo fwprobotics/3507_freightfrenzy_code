@@ -23,13 +23,13 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.Claw;
-import org.firstinspires.ftc.teamcode.subsystems.Pipeline;
+import org.firstinspires.ftc.teamcode.subsystems.LoopyPipeline;
 
 @Autonomous(name="BlueLeft", group="chad")
 public class BlueLeft extends LinearOpMode {
     
     OpenCvCamera webcam;
-    Pipeline pipeline;
+    LoopyPipeline pipeline;
     
     //Holds analysis
    CupPosition cupPos;
@@ -47,6 +47,7 @@ public class BlueLeft extends LinearOpMode {
     Integer gearratio = 40;
     Double diameter = 4.125;
     Double cpi = (cpr * gearratio)/(Math.PI * diameter); //counts per inch, 28cpr * gear ratio / (2 * pi * diameter (in inches, in the center))
+    //Bias should be set so 1 inch = 1 CHAD count. This may not be the case practically
     Double bias = .717; //default 0.8
     Double meccyBias = .795; //change to adjust only strafing movement
     //
@@ -98,10 +99,12 @@ public class BlueLeft extends LinearOpMode {
 
         //Shows analysis in telemetry (this is mostly a testing thing)
         telemetry.addData("Position", cupPos);
-        
-        telemetry.addData("Right avg", pipeline.box3_average_hue);
-        telemetry.addData("Middle avg", pipeline.box2_average_hue);
-        telemetry.addData("Left avg", pipeline.box1_average_hue);
+        telemetry.addData("Box x", pipeline.box1xfinal);
+        telemetry.addData("Box y", pipeline.box1yfinal);
+        telemetry.addData("Deviation", pipeline.min_deviation);
+        telemetry.addData("Saturation", pipeline.finalsat);
+        telemetry.addData("Hue", pipeline.besthue);
+        telemetry.update();
 
         telemetry.update();
         //
@@ -109,19 +112,17 @@ public class BlueLeft extends LinearOpMode {
 
 
         //Moves arm motor to a certain position based on where the cup is 
-
-        if (cupPos == CupPosition.LEFT) {
-            arm.autoPositions(1);
-        } else if (cupPos == CupPosition.MIDDLE) {
-            arm.autoPositions(2);
-        } else if (cupPos == CupPosition.RIGHT) {
-            arm.autoPositions(3);
+        switch(cupPos) {
+            case LEFT:  
+                arm.autoPositions(Arm.autoOptions.BOTTOM);
+                break;
+            case MIDDLE:  
+                arm.autoPositions(Arm.autoOptions.MIDDLE);
+                break;
+            case RIGHT: 
+                arm.autoPositions(Arm.autoOptions.OVERSHOOT);
+                break;
         }
-
-
-
-
-
         telemetry.update();
 
 
@@ -135,7 +136,7 @@ public class BlueLeft extends LinearOpMode {
         strafeToPosition(17, 0.2);
         //
 
-        //
+        //Some of this could be cleaned up, but it works.
         if (cupPos == CupPosition.LEFT) {
             moveToPosition(22, 0.2);
             claw.openClaw();
@@ -151,18 +152,13 @@ public class BlueLeft extends LinearOpMode {
             moveToPosition(-6, 0.2);
             turnWithGyro(90,.5);
         } else if (cupPos == CupPosition.RIGHT) {
+            //General idea here is to overshoot the arm and then come down to drop the box
             moveToPosition(25.25, 0.2);
-         /*   turnWithGyro(180, 0.2);
-            sleep(750);
-            arm.autoPositions(3);
-            moveToPosition(-7, 0.3);
-                  moveToPosition(-7.2, 0.1);
-*/
-            arm.autoPositions(4);
+            arm.autoPositions(Arm.autoOptions.TOP);
             claw.openClaw();
             sleep(500);
             claw.closeClaw();
-            arm.autoPositions(3);
+            arm.autoPositions(Arm.autoOptions.OVERSHOOT);
             moveToPosition(-3, 0.2);
             turnWithGyro(90, 0.5);
         
@@ -172,10 +168,12 @@ public class BlueLeft extends LinearOpMode {
         //
         strafeToPosition(27, 0.5);
         //
-        moveToPosition(-60, 0.5);
+        moveToPosition(-40, 0.5);
         //
-              strafeToPosition(-30, 0.5);
-        arm.autoPositions(5);
+        strafeToPosition(-45, 0.5);
+        moveToPosition(-10, 0.5);
+        arm.autoPositions(Arm.autoOptions.GROUND);
+        
         
     }
     
@@ -190,10 +188,11 @@ public class BlueLeft extends LinearOpMode {
         // Combines the above to create a webcam that we will use
         webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
         //Sets our pipeline to view images through as the one we want
-        pipeline = new Pipeline(10,195,90,-8);
+        //(Boundary between regions 1 and 2, Boundary between 2 and 3, Far left, Far top, Far right, Far bottom, opmode, the side we're on)
+        pipeline = new LoopyPipeline(65, 165, 0, 150, 250, 200, this, LoopyPipeline.Side.BLUE);
         webcam.setPipeline(pipeline);
 
-// Turns on the webcam
+        // Turns on the webcam
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
@@ -216,21 +215,21 @@ public class BlueLeft extends LinearOpMode {
 //Takes some time so we can run everything through the pipeline
         sleep(3500);
 
-        Pipeline.Position cupPosition = pipeline.position;
+        LoopyPipeline.Position cupPosition = pipeline.position;
         
 //Sets cupPos to a corresponding position basesd on pipeline analysis
 
-        if (cupPosition == Pipeline.Position.LEFT)
+        if (cupPosition == LoopyPipeline.Position.LEFT)
         {
             cupPos = CupPosition.LEFT;
 
         }
-    else if (cupPosition == Pipeline.Position.RIGHT) 
+    else if (cupPosition == LoopyPipeline.Position.RIGHT) 
         {
             cupPos = CupPosition.RIGHT;
 
         }
-      else if (cupPosition == Pipeline.Position.MIDDLE) 
+      else if (cupPosition == LoopyPipeline.Position.MIDDLE) 
         {
            cupPos = CupPosition.MIDDLE;
 

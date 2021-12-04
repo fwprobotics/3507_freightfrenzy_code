@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+//starting imports
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
@@ -24,16 +25,19 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.Claw;
 import org.firstinspires.ftc.teamcode.subsystems.Pipeline;
+import org.firstinspires.ftc.teamcode.subsystems.LoopyPipeline;
 
+// start of code
 @Autonomous(name="RedRight", group="chad")
 public class RedRight extends LinearOpMode {
     
     OpenCvCamera webcam;
-    Pipeline pipeline;
+    LoopyPipeline pipeline;
     
     //Holds analysis
    CupPosition cupPos;
-    //
+    
+// defines variables for motors and servos
     DcMotor frontleft;
     DcMotor frontright;
     DcMotor backleft;
@@ -47,6 +51,7 @@ public class RedRight extends LinearOpMode {
     Integer gearratio = 40;
     Double diameter = 4.125;
     Double cpi = (cpr * gearratio)/(Math.PI * diameter); //counts per inch, 28cpr * gear ratio / (2 * pi * diameter (in inches, in the center))
+    // 1 CHAD tick should be 1 inch but this might not actually be the case
     Double bias = .717; //default 0.8
     Double meccyBias = .795; //change to adjust only strafing movement
     //
@@ -65,11 +70,12 @@ public class RedRight extends LinearOpMode {
         MIDDLE, // B
         RIGHT // C
     }
-
+// initializing and running autonomous
     public void runOpMode(){
         //
         initGyro();
-        //
+        
+        // sets variables for each motor and servo
         frontleft = hardwareMap.dcMotor.get("frontLeftDrive");
         frontright = hardwareMap.dcMotor.get("frontRightDrive");
         backleft = hardwareMap.dcMotor.get("backLeftDrive");
@@ -78,7 +84,7 @@ public class RedRight extends LinearOpMode {
       arm = new Arm(Arm.armRunMode.AUTONOMOUS, this, hardwareMap, telemetry);
       claw = new Claw(hardwareMap);
 
-
+// reverses the direction of left wheels
         frontleft.setDirection(DcMotorSimple.Direction.REVERSE);
         backleft.setDirection(DcMotorSimple.Direction.REVERSE); 
      
@@ -103,20 +109,26 @@ public class RedRight extends LinearOpMode {
         //Gets analysis from pipeline 
         findCup();
 
-        //Shows analysis in telemetry (this is mostly a testing thing)
+        //Shows above analysis in telemetry (this is mostly a testing thing)
         telemetry.addData("Position", cupPos);
-        telemetry.addData("Right avg", pipeline.box3_average_hue);
-        telemetry.addData("Middle avg", pipeline.box2_average_hue);
-        telemetry.addData("Left avg", pipeline.box1_average_hue);
+        telemetry.addData("Box x", pipeline.box1xfinal);
+        telemetry.addData("Box y", pipeline.box1yfinal);
+        telemetry.addData("Deviation", pipeline.min_deviation);
+        telemetry.addData("Saturation", pipeline.finalsat);
+        telemetry.addData("Hue", pipeline.besthue);
         telemetry.update();
 
-        //Moves arm motor to a certain position based on where the cup is 
-        if (cupPos == CupPosition.LEFT) {
-            arm.autoPositions(1); // Bottom
-        } else if (cupPos == CupPosition.MIDDLE) {
-            arm.autoPositions(2); // Middle
-        } else if (cupPos == CupPosition.RIGHT) {
-            arm.autoPositions(3); // Top
+        //Moves arm motor to the position that corresponds to the cup position 
+        switch(cupPos) {
+            case LEFT:  
+                arm.autoPositions(Arm.autoOptions.BOTTOM);
+                break;
+            case MIDDLE:  
+                arm.autoPositions(Arm.autoOptions.MIDDLE);
+                break;
+            case RIGHT: 
+                arm.autoPositions(Arm.autoOptions.OVERSHOOT);
+                break;
         }
         telemetry.update();
 
@@ -126,12 +138,13 @@ public class RedRight extends LinearOpMode {
 
         moveToPosition(1.5, 0.2);
         //
+        //turn off camera and strafes tee hee lol
         webcam.stopStreaming();
         webcam.closeCameraDevice();
         strafeToPosition(-17, 0.2);
         //
 
-        //
+        //based on cup position, moves to a certain position closer or further from Alliance shipping hub, lets go of 
         if (cupPos == CupPosition.LEFT) {
             moveToPosition(21, 0.2);
             claw.openClaw();
@@ -154,11 +167,11 @@ public class RedRight extends LinearOpMode {
             moveToPosition(-7, 0.3);
                   moveToPosition(-7.2, 0.1);
 */
-            arm.autoPositions(4);
+            arm.autoPositions(Arm.autoOptions.TOP);
             claw.openClaw();
             sleep(500);
             claw.closeClaw();
-            arm.autoPositions(3);
+            arm.autoPositions(Arm.autoOptions.OVERSHOOT);
             moveToPosition(-3, 0.2);
             turnWithGyro(90, 0.2);
         }
@@ -171,12 +184,12 @@ public class RedRight extends LinearOpMode {
         //
         strafeToPosition(-30, 0.5);
         //
-        arm.autoPositions(5);
+        arm.autoPositions(Arm.autoOptions.GROUND);
     }
     
  
 
-//Function to turn on camera
+//Function to turn on camera and me ;)
  private void initCV() {
      // Sets variable for the camera id
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -184,8 +197,8 @@ public class RedRight extends LinearOpMode {
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
         // Combines the above to create a webcam that we will use
         webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
-        //Sets our pipeline to view images through as the one we want
-        pipeline = new Pipeline(125, 185, 80, 3);
+        //(Boundary between regions 1 and 2, Boundary between 2 and 3, Far left, Far top, Far right, Far bottom, opmode, the side we're on)
+        pipeline = new LoopyPipeline(175, 280, 65, 150, 310, 200, this, LoopyPipeline.Side.RED);
         webcam.setPipeline(pipeline);
 
 // Turns on the webcam
@@ -194,7 +207,8 @@ public class RedRight extends LinearOpMode {
             @Override
             public void onOpened()
             {
-                webcam.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT);
+                //Disable the below during a tournament
+               webcam.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT);
             }
             //This is needed so it knows what to do if something goes wrong
             public void onError(int thing){
@@ -211,21 +225,21 @@ public class RedRight extends LinearOpMode {
         //Takes some time so we can run everything through the pipeline
         sleep(3500);
 
-        Pipeline.Position cupPosition = pipeline.position;
+        LoopyPipeline.Position cupPosition = pipeline.position;
         
         //Sets cupPos to a corresponding position basesd on pipeline analysis
 
-        if (cupPosition == Pipeline.Position.LEFT)
+        if (cupPosition == LoopyPipeline.Position.LEFT)
         {
             cupPos = CupPosition.LEFT;
 
         }
-       else if (cupPosition == Pipeline.Position.RIGHT) 
+       else if (cupPosition == LoopyPipeline.Position.RIGHT) 
         {
             cupPos = CupPosition.RIGHT;
 
         }
-        else if (cupPosition == Pipeline.Position.MIDDLE) 
+        else if (cupPosition == LoopyPipeline.Position.MIDDLE) 
         {
            cupPos = CupPosition.MIDDLE;
 

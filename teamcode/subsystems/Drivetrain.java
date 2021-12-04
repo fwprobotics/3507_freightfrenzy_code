@@ -9,10 +9,6 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-/*
-Drivetrain subsystem. Currently holds teleop driving control. By Jake B, 2019.
- */
-
 public class Drivetrain {
 
     private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
@@ -25,11 +21,12 @@ public class Drivetrain {
     private static final MotorConfigurationType MOTOR_CONFIG =
             MotorConfigurationType.getMotorType(RevRobotics20HdHexMotor.class);
 
-  //  @Config
     public static class TeleOpDTConstants {
+        //Biases so we don't go too fast
         public static double turning_modifier = 0.70;
         public static double y_modifier = 0.80;
         public static double x_modifier = 0.70;
+        public static double speedFactor = 0.7;
 
     }
 
@@ -57,21 +54,36 @@ public class Drivetrain {
         l.idle();
     }
 
-    public void JoystickMovement(double leftStickY, double leftStickX, double rightStickX){
+    //This is the teleop drive formulas
+    public void JoystickMovement(double leftStickY, double leftStickX, double rightStickX, boolean slowModeControl){
+        
+        double slowModeMult = slowModeControl ? 0.5 : 1;
 
         //Sets motor values based on adding and subtracting joystick values
-        double LeftX = -leftStickX * TeleOpDTConstants.x_modifier;
-        double LeftY = -leftStickY * TeleOpDTConstants.y_modifier;
-        double RightX = -rightStickX * TeleOpDTConstants.turning_modifier;
+        double LeftX = cubeInput(-leftStickX, TeleOpDTConstants.speedFactor);
+        double LeftY = cubeInput(-leftStickY, TeleOpDTConstants.speedFactor);
+        double RightX = cubeInput(-rightStickX, TeleOpDTConstants.speedFactor);
 
         double frontLeftVal = ((LeftY - RightX) - LeftX);
         double frontRightVal = ((LeftY + RightX) + LeftX);
         double backLeftVal = ((LeftY - RightX) + LeftX);
         double backRightVal = ((LeftY + RightX) - LeftX);
+        
+        
 
-        frontLeftDrive.setPower(frontLeftVal);
-        frontRightDrive.setPower(frontRightVal);
-        backLeftDrive.setPower(backLeftVal);
-        backRightDrive.setPower(backRightVal);
+        frontLeftDrive.setPower(frontLeftVal * slowModeMult);
+        frontRightDrive.setPower(frontRightVal * slowModeMult);
+        backLeftDrive.setPower(backLeftVal * slowModeMult);
+        backRightDrive.setPower(backRightVal * slowModeMult);
+        
+        realTelemetry.addData("leftx", LeftX);
+        realTelemetry.addData("-left stick x", -leftStickX);
+    }
+    
+    double cubeInput (double input, double factor) {
+        double t = factor * Math.pow(input,3 );
+        double r = input * (1 - factor);
+        return t + r;
+        
     }
 }

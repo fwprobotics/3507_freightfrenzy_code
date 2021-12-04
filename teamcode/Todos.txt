@@ -1,0 +1,11 @@
+Todos (in order of priority):
+
+Implementing new features:
+1) Curve drivetrain √
+2) PID on arm (base PIDF is p=10 i=0.49988 d=0 f=0)
+
+Clean up and restructuring:
++ Clean up code! - (sorta done . . .)
++ Move CHAD functions to other file
++ Start using Enums √
++ Fix claw control functions (so they take a button as input √

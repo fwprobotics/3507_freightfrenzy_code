@@ -1,5 +1,7 @@
+// THIS IS OLD - DO NOT USE UNLESS LOOPY STOPS WORKING
 package org.firstinspires.ftc.teamcode.subsystems;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -22,6 +24,9 @@ public class Pipeline extends OpenCvPipeline {
         //Defines dimensions for the boxes
         final int REGION_WIDTH = 25;
         final int REGION_HEIGHT = 30;
+        
+
+   
 
         //Defines starting points for the first box
         public static int box1x;
@@ -93,7 +98,7 @@ public Pipeline (int x1, int y1, int x_increment, int y_increment){
             BOX3_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
         
         // Sets ideal hue
-        int HueGoal = 80;
+        int HueGoal = 150;
 
         // ints to hold distance from hue goal
         public int box1_deviation;
