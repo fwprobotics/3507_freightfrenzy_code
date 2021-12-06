@@ -168,7 +168,16 @@ public class BlueLeft extends LinearOpMode {
         //
         strafeToPosition(27, 0.5);
         //
-        moveToPosition(-50, 0.5);
+        frontleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontleft.setPower(-0.75);
+        frontright.setPower(-0.8);
+        backleft.setPower(-0.75);
+        backright.setPower(-0.8);
+        //
+        sleep(3000);
         //
         strafeToPosition(-40, 0.5);
         moveToPosition(-5, 0.5);
@@ -189,7 +198,7 @@ public class BlueLeft extends LinearOpMode {
         webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
         //Sets our pipeline to view images through as the one we want
         //(Boundary between regions 1 and 2, Boundary between 2 and 3, Far left, Far top, Far right, Far bottom, opmode, the side we're on)
-        pipeline = new LoopyPipeline(80, 165, 30, 170, 250, 210, this, LoopyPipeline.Side.BLUE);
+        pipeline = new LoopyPipeline(80, 165, 40, 130, 245, 140, this, LoopyPipeline.Side.BLUE);
         webcam.setPipeline(pipeline);
 
         // Turns on the webcam

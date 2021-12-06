@@ -178,10 +178,18 @@ public class RedRight extends LinearOpMode {
         //
 
         //
-        strafeToPosition(25, 0.5);
+        strafeToPosition(25, 0.4);
         //
-        moveToPosition(60, 0.5);
+        frontleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontleft.setPower(0.8);
+        frontright.setPower(0.75);
+        backleft.setPower(0.8);
+        backright.setPower(0.75);
         //
+        sleep(3000);
         strafeToPosition(-30, 0.5);
         //
         arm.autoPositions(Arm.autoOptions.GROUND);
@@ -198,7 +206,7 @@ public class RedRight extends LinearOpMode {
         // Combines the above to create a webcam that we will use
         webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
         //(Boundary between regions 1 and 2, Boundary between 2 and 3, Far left, Far top, Far right, Far bottom, opmode, the side we're on)
-        pipeline = new LoopyPipeline(175, 240, 90, 170, 280, 190, this, LoopyPipeline.Side.RED);
+        pipeline = new LoopyPipeline(175, 240, 90, 130, 290, 145, this, LoopyPipeline.Side.RED);
         webcam.setPipeline(pipeline);
 
 // Turns on the webcam

@@ -31,17 +31,24 @@ public class LoopyPipeline extends OpenCvPipeline {
         //Defines dimensions for the boxes
         final int REGION_WIDTH = 10;
         final int REGION_HEIGHT = 25;
+        
+        final int TAPE_WIDTH = 15;
+        final int TAPE_HEIGHT = 5;
  
         public LinearOpMode l;
         
         //Defines starting points for the first box
         public int box1x;
         public int box1y;
+        public int box2x;
+        public int box2y;
+        public int box3x;
+        public int box3y;
         int startx;
         int starty;
         int maxx;
         int maxy;
-        int sat_threshold = 60;
+        int sat_threshold = 50;
 
         //Defines a Mat specifically for the first box
         Mat box1_Mat;
@@ -51,22 +58,55 @@ public class LoopyPipeline extends OpenCvPipeline {
 
         //And one for saturation
         int box1_average_sat;
+        
+        Mat box2_Mat;
+
+        int box2_average_hue;
+        
+        int box2_average_sat;
+
+        Mat box3_Mat;
+
+        int box3_average_hue;
+
+        int box3_average_sat;
+
 
        
 
         // Sets ideal hue
         int HueGoal = 110;
+        int TapeGoal;
 
         // int to hold distance from hue goal
         int box1_deviation;
+        int box2_deviation;
+        int box3_deviation;
 
         // int to hold current deviation
         public int min_deviation;
+        public int min_deviation2;
+        public int min_deviation3;
 
         //ints to hold final information
         public int box1xfinal;
         public int box1yfinal;
         public int finalsat;
+        
+        int box2xfinal;
+        int box2yfinal;
+
+        int box3xfinal;
+        int box3yfinal;
+        
+        int box4x = 60;
+        int box4y = 150;
+        Mat box4_Mat;
+
+        int box4_average_hue;
+
+        int box4_average_sat;
+        
 
         //Sets ints for lines
         int line1x;
@@ -80,7 +120,9 @@ public class LoopyPipeline extends OpenCvPipeline {
         public volatile Position position = Position.MIDDLE;  
 
           //Defines colors to draw box with
-          final Scalar RED = new Scalar(225, 0, 0);
+        final Scalar RED = new Scalar(225, 0, 0);
+        final Scalar BLACK = new Scalar(0, 0, 0);
+        final Scalar WHITE = new Scalar(225, 225, 225);
           
           public LoopyPipeline(int x1, int x2, int minx, int miny, int Maxx, int Maxy, LinearOpMode input, Side ourSide){
             line1x = x1;
@@ -91,6 +133,15 @@ public class LoopyPipeline extends OpenCvPipeline {
             maxy = Maxy;
             l = input;
             side = ourSide;
+            switch (side){
+                case RED:
+                    TapeGoal = 175;
+                    break;
+                case BLUE:
+                    TapeGoal = 110;
+                    break;
+                
+            }
         }
 
         
@@ -100,6 +151,12 @@ public class LoopyPipeline extends OpenCvPipeline {
     @Override
     public Mat processFrame(Mat inputMat) {
         min_deviation = 1000000;
+        min_deviation2 = 1000000;
+        min_deviation3 = 1000000;
+        box2xfinal = 0;
+        box2yfinal = 0;
+        box3xfinal = 0;
+        box3yfinal = 0;
         box1x = startx;
         box1y = starty;
         //Converts to HSV
@@ -142,28 +199,160 @@ public class LoopyPipeline extends OpenCvPipeline {
             box1y++;
 
         }
+        box2x = startx;
+        box2y = maxy - 1;
+
+        while (box2y < maxy &! l.isStopRequested()) {
+
+            while (box2x < maxx &! l.isStopRequested()){
+         //Defines an anchor point for the first box using the dimensions
+         Point BOX2_TOPLEFT_ANCHOR_POINT = new Point(box2x, box2y);
+            
+         //Defines the two points used to draw the first box
+         Point box2_pointA = new Point(
+             BOX2_TOPLEFT_ANCHOR_POINT.x,
+             BOX2_TOPLEFT_ANCHOR_POINT.y);
+         Point box2_pointB = new Point(
+             BOX2_TOPLEFT_ANCHOR_POINT.x + TAPE_WIDTH,
+             BOX2_TOPLEFT_ANCHOR_POINT.y + TAPE_HEIGHT);
+            //Sets the box1 Mat to the stuff in box1
+            box2_Mat = inputMat.submat(new Rect(box2_pointA, box2_pointB));
+
+            //Takes the average hue of box1
+            box2_average_hue = (int) Core.mean(box2_Mat).val[0];
+
+            //Does the same for saturation
+            box2_average_sat = (int) Core.mean(box2_Mat).val[1];
+
+            box2_deviation = Math.abs(box2_average_hue - TapeGoal);
+
+            //Includes a term to basically avoid accidentally detecting the cup
+            if (box2_deviation + 2 < min_deviation2 && box2_average_sat > sat_threshold && (Math.abs(box2x - box1xfinal - REGION_WIDTH/2) > 40)){
+                min_deviation2 = box2_deviation;
+                box2xfinal = box2x;
+                box2yfinal = box2y;
+
+            }
+            box2x++;
+            }
+            box2x = startx;
+            box2y++;
+
+        }
+
+        box3x = box2xfinal + TAPE_WIDTH;
+        box3y = maxy - 1;
+
+        while (box3y < maxy &! l.isStopRequested()) {
+
+            while (box3x < maxx &! l.isStopRequested()){
+         //Defines an anchor point for the first box using the dimensions
+         Point BOX3_TOPLEFT_ANCHOR_POINT = new Point(box3x, box3y);
+            
+         //Defines the two points used to draw the first box
+         Point box3_pointA = new Point(
+             BOX3_TOPLEFT_ANCHOR_POINT.x,
+             BOX3_TOPLEFT_ANCHOR_POINT.y);
+         Point box3_pointB = new Point(
+             BOX3_TOPLEFT_ANCHOR_POINT.x + TAPE_WIDTH,
+             BOX3_TOPLEFT_ANCHOR_POINT.y + TAPE_HEIGHT);
+            //Sets the box1 Mat to the stuff in box1
+            box3_Mat = inputMat.submat(new Rect(box3_pointA, box3_pointB));
+
+            //Takes the average hue of box1
+            box3_average_hue = (int) Core.mean(box3_Mat).val[0];
+
+            //Does the same for saturation
+            box3_average_sat = (int) Core.mean(box3_Mat).val[1];
+
+            box3_deviation = Math.abs(box3_average_hue - TapeGoal);
+
+            //Includes a term to basically avoid accidentally detecting the cup
+            if (box3_deviation + 5< min_deviation3 && box3_average_sat > sat_threshold && (Math.abs(box3x - box1xfinal - REGION_WIDTH/2) > 40)){
+                min_deviation3 = box3_deviation;
+                box3xfinal = box3x;
+                box3yfinal = box3y;
+
+            }
+            box3x++;
+            }
+            box3x = box2xfinal + TAPE_WIDTH;
+            box3y++;
+
+        }
+        
+          //Defines an anchor point for the first box using the dimensions
+         Point BOX4_TOPLEFT_ANCHOR_POINT = new Point(box2x, box2y);
+            
+         //Defines the two points used to draw the first box
+         Point box4_pointA = new Point(
+             BOX4_TOPLEFT_ANCHOR_POINT.x,
+             BOX4_TOPLEFT_ANCHOR_POINT.y);
+         Point box4_pointB = new Point(
+             BOX4_TOPLEFT_ANCHOR_POINT.x + TAPE_WIDTH,
+             BOX4_TOPLEFT_ANCHOR_POINT.y + TAPE_HEIGHT);
+            //Sets the box1 Mat to the stuff in box1
+            box4_Mat = inputMat.submat(new Rect(box4_pointA, box4_pointB));
+
+            //Takes the average hue of box1
+            box4_average_hue = (int) Core.mean(box4_Mat).val[0];
+
+            //Does the same for saturation
+            box4_average_sat = (int) Core.mean(box4_Mat).val[1];
+            
+            l.telemetry.addData("tapeSat", box4_average_sat);
+            l.telemetry.addData("tapeHue", box4_average_hue);
+            
+            
+
 
 // If we are on the red side, the right will have a small area of detection so we default there. The opposite is true for the blue side.
 if (side == Side.RED) {
     // Checks where the best fit was and gives analysis accordingly
-        if (box1xfinal > line2x || min_deviation > 30){
-            position = Position.RIGHT;
-        } else if (box1xfinal < line1x){
-            position = Position.LEFT;
+        if ((box2_deviation < 10) && (box3_deviation < 10)) {
+            l.telemetry.addData("Using Tape", "indeed!");
+            if ((box1xfinal < box2xfinal) && (box1xfinal < box3xfinal)){
+                position = Position.LEFT;
+            } else if ((box1xfinal > box2xfinal) && (box1xfinal > box3xfinal)){
+                position = Position.RIGHT;
+            } else {
+                position = Position.MIDDLE;
+            }
         } else {
-            position = Position.MIDDLE;
+            l.telemetry.addData("Using Tape", "nope!");
+            if (box1xfinal > line2x || min_deviation > 30){
+                position = Position.RIGHT;
+            } else if (box1xfinal < line1x){
+                position = Position.LEFT;
+            } else {
+                position = Position.MIDDLE;
+            }
         }
-} else {
-    if (box1xfinal < line1x || min_deviation > 30){
-            position = Position.LEFT;
-        } else if (box1xfinal > line2x){
-            position = Position.RIGHT;
-        } else {
-            position = Position.MIDDLE;
+        } else if ((box2_deviation < 10) && (box3_deviation < 10)) {
+            l.telemetry.addData("Using Tape", "indeed!");
+            if ((box1xfinal < box2xfinal) && (box1xfinal < box3xfinal)){
+                position = Position.LEFT;
+            } else if ((box1xfinal > box2xfinal) && (box1xfinal > box3xfinal)){
+                position = Position.RIGHT;
+            } else {
+                position = Position.MIDDLE;
+            }
+        } else{ 
+            l.telemetry.addData("Using Tape", "nope!");
+            if (box1xfinal < line1x || min_deviation > 30){
+                position = Position.LEFT;
+            } else if (box1xfinal > line2x){
+                position = Position.RIGHT;
+            } else {
+                position = Position.MIDDLE;
+            }
         }
-}
+
         //Defines an anchor point for the best box using the dimensions we recorded
         Point FINALBOX_TOPLEFT_ANCHOR_POINT = new Point(box1xfinal, box1yfinal);
+        Point TAPE1BOX_TOPLEFT_ANCHOR_POINT = new Point(box2xfinal, box2yfinal);
+        Point TAPE2BOX_TOPLEFT_ANCHOR_POINT = new Point(box3xfinal, box3yfinal);
+        Point TAPE3BOX_TOPLEFT_ANCHOR_POINT = new Point(box4x, box4y);
             
         //Defines the two points used to draw the final box
         Point finalbox_pointA = new Point(
@@ -172,6 +361,24 @@ if (side == Side.RED) {
         Point finalbox_pointB = new Point(
             FINALBOX_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
             FINALBOX_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
+        Point tape1box_pointA = new Point(
+                TAPE1BOX_TOPLEFT_ANCHOR_POINT.x,
+                TAPE1BOX_TOPLEFT_ANCHOR_POINT.y);
+        Point tape1box_pointB = new Point(
+                TAPE1BOX_TOPLEFT_ANCHOR_POINT.x + TAPE_WIDTH,
+                TAPE1BOX_TOPLEFT_ANCHOR_POINT.y + TAPE_HEIGHT);
+        Point tape2box_pointA = new Point(
+                TAPE2BOX_TOPLEFT_ANCHOR_POINT.x,
+                TAPE2BOX_TOPLEFT_ANCHOR_POINT.y);
+        Point tape2box_pointB = new Point(
+                TAPE2BOX_TOPLEFT_ANCHOR_POINT.x + TAPE_WIDTH,
+                TAPE2BOX_TOPLEFT_ANCHOR_POINT.y + TAPE_HEIGHT);
+        Point tape3box_pointA = new Point(
+                TAPE3BOX_TOPLEFT_ANCHOR_POINT.x,
+                TAPE3BOX_TOPLEFT_ANCHOR_POINT.y);
+        Point tape3box_pointB = new Point(
+                TAPE3BOX_TOPLEFT_ANCHOR_POINT.x + TAPE_WIDTH,
+                TAPE3BOX_TOPLEFT_ANCHOR_POINT.y + TAPE_HEIGHT);
             
             //Defines a bunch of points that we use to draw lines that will show where we are looking
             Point line0pointA = new Point(startx, starty);
@@ -193,6 +400,26 @@ if (side == Side.RED) {
             inputMat, // What to draw on
             finalbox_pointA, // First point which defines the rectangle
             finalbox_pointB, // Second point which defines the rectangle
+            RED, // The color the rectangle is drawn in
+            2); // Thickness of the rectangle lines
+            
+            Imgproc.rectangle(
+            inputMat, // What to draw on
+            tape1box_pointA, // First point which defines the rectangle
+            tape1box_pointB, // Second point which defines the rectangle
+            BLACK, // The color the rectangle is drawn in
+            2); // Thickness of the rectangle lines
+            Imgproc.rectangle(
+            inputMat, // What to draw on
+            tape2box_pointA, // First point which defines the rectangle
+            tape2box_pointB, // Second point which defines the rectangle
+            WHITE, // The color the rectangle is drawn in
+            2); // Thickness of the rectangle lines
+            
+            Imgproc.rectangle(
+            inputMat, // What to draw on
+            tape3box_pointA, // First point which defines the rectangle
+            tape3box_pointB, // Second point which defines the rectangle
             RED, // The color the rectangle is drawn in
             2); // Thickness of the rectangle lines
                 
@@ -244,6 +471,8 @@ if (side == Side.RED) {
         l.telemetry.addData("Deviation", min_deviation);
         l.telemetry.addData("Saturation", finalsat);
         l.telemetry.addData("Hue", besthue);
+        l.telemetry.addData("tape1Dev", min_deviation2);
+        l.telemetry.addData("tape2Dev", min_deviation3);
         l.telemetry.update();
         //Shows the image
         return inputMat;
