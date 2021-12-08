@@ -156,9 +156,10 @@ public class BlueLeft extends LinearOpMode {
             moveToPosition(25.75, 0.2);
             arm.autoPositions(Arm.autoOptions.TOP);
             claw.openClaw();
+            sleep(1000);
+            arm.autoPositions(Arm.autoOptions.OVERSHOOT);
             sleep(500);
             claw.closeClaw();
-            arm.autoPositions(Arm.autoOptions.OVERSHOOT);
             moveToPosition(-3, 0.2);
             turnWithGyro(90, 0.5);
         
@@ -172,15 +173,14 @@ public class BlueLeft extends LinearOpMode {
         frontright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontleft.setPower(-0.75);
-        frontright.setPower(-0.8);
-        backleft.setPower(-0.75);
-        backright.setPower(-0.8);
+        frontleft.setPower(-0.8);
+        frontright.setPower(-0.75);
+        backleft.setPower(-0.8);
+        backright.setPower(-0.75);
         //
-        sleep(3000);
+        sleep(2000);
         //
-        strafeToPosition(-40, 0.5);
-        moveToPosition(-5, 0.5);
+        strafeToPosition(-30, 0.5);
         arm.autoPositions(Arm.autoOptions.GROUND);
         
         
@@ -222,7 +222,7 @@ public class BlueLeft extends LinearOpMode {
      private void findCup() {
 
 //Takes some time so we can run everything through the pipeline
-        sleep(3500);
+        sleep(3000);
 
         LoopyPipeline.Position cupPosition = pipeline.position;
         

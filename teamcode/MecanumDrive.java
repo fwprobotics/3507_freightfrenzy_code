@@ -48,7 +48,7 @@ public class MecanumDrive extends LinearOpMode {
                     Claw.openClaw();} // FIXME same as above
                     telemetry.update();
                     */
-                claw.TeleopControl(gamepad2.x);
+                claw.TeleopControl(gamepad2.x || gamepad1.x);
                 
             }
         }

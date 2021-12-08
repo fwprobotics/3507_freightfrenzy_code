@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 //import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.motors.RevRobotics20HdHexMotor;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -26,7 +27,8 @@ public class Drivetrain {
         public static double turning_modifier = 0.70;
         public static double y_modifier = 0.80;
         public static double x_modifier = 0.70;
-        public static double speedFactor = 0.7;
+        public static double speedFactor = 0.75;
+        public static double power_modifier = 0.7;
 
     }
 
@@ -57,12 +59,12 @@ public class Drivetrain {
     //This is the teleop drive formulas
     public void JoystickMovement(double leftStickY, double leftStickX, double rightStickX, boolean slowModeControl){
         
-        double slowModeMult = slowModeControl ? 0.5 : 1;
+        double slowModeMult = slowModeControl ? 0.3 : 1;
 
         //Sets motor values based on adding and subtracting joystick values
         double LeftX = cubeInput(-leftStickX, TeleOpDTConstants.speedFactor);
         double LeftY = cubeInput(-leftStickY, TeleOpDTConstants.speedFactor);
-        double RightX = cubeInput(-rightStickX, TeleOpDTConstants.speedFactor);
+        double RightX = cubeInput(-rightStickX, TeleOpDTConstants.speedFactor) * TeleOpDTConstants.turning_modifier;
 
         double frontLeftVal = ((LeftY - RightX) - LeftX);
         double frontRightVal = ((LeftY + RightX) + LeftX);
@@ -71,10 +73,10 @@ public class Drivetrain {
         
         
 
-        frontLeftDrive.setPower(frontLeftVal * slowModeMult);
-        frontRightDrive.setPower(frontRightVal * slowModeMult);
-        backLeftDrive.setPower(backLeftVal * slowModeMult);
-        backRightDrive.setPower(backRightVal * slowModeMult);
+        frontLeftDrive.setPower(frontLeftVal * slowModeMult * TeleOpDTConstants.power_modifier);
+        frontRightDrive.setPower(frontRightVal * slowModeMult * TeleOpDTConstants.power_modifier);
+        backLeftDrive.setPower(backLeftVal * slowModeMult * TeleOpDTConstants.power_modifier);
+        backRightDrive.setPower(backRightVal * slowModeMult * TeleOpDTConstants.power_modifier);
         
         realTelemetry.addData("leftx", LeftX);
         realTelemetry.addData("-left stick x", -leftStickX);

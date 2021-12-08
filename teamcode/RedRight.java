@@ -169,9 +169,10 @@ public class RedRight extends LinearOpMode {
 */
             arm.autoPositions(Arm.autoOptions.TOP);
             claw.openClaw();
+            sleep(1000);
+            arm.autoPositions(Arm.autoOptions.OVERSHOOT);
             sleep(500);
             claw.closeClaw();
-            arm.autoPositions(Arm.autoOptions.OVERSHOOT);
             moveToPosition(-3, 0.2);
             turnWithGyro(90, 0.2);
         }
@@ -189,7 +190,7 @@ public class RedRight extends LinearOpMode {
         backleft.setPower(0.8);
         backright.setPower(0.75);
         //
-        sleep(3000);
+        sleep(2000);
         strafeToPosition(-30, 0.5);
         //
         arm.autoPositions(Arm.autoOptions.GROUND);
