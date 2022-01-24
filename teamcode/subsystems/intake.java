@@ -6,11 +6,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-/*
-Class for controlling robot's intake. Very simple state machine for toggling on/off.
-Probably will add some direction control later, just in case. Includes toggling for teleop
-and set control for autonomous. By Jake, 1/27/20.
- */
 
 public class Intake {
 
