@@ -7,11 +7,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-/*
-Class for controlling lift on robot. WIP, teleop should
-be okay currently - but no encoders sadly, hopefully it'll
-work out. By Jake, 1/27/20.
- */
 
 
 public class Lift{
