@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+//starting imports
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
@@ -16,33 +17,33 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
+import org.firstinspires.ftc.teamcode.subsystems.Claw;
+import org.firstinspires.ftc.teamcode.subsystems.Pipeline;
+import org.firstinspires.ftc.teamcode.subsystems.LoopyPipeline;
 
+// start of code
 @Autonomous(name="RedLeft", group="chad")
 public class RedLeft extends LinearOpMode {
     
-      OpenCvCamera webcam;
-    WhichPosition pipeline;
+    OpenCvCamera webcam;
+    LoopyPipeline pipeline;
     
     //Holds analysis
    CupPosition cupPos;
-    //
+    
+// defines variables for motors and servos
     DcMotor frontleft;
     DcMotor frontright;
     DcMotor backleft;
     DcMotor backright;
     Arm arm;
+    Claw claw;
     
     //28 * 20 / (2ppi * 4.125)
     Double width = 12.0; //inches
@@ -50,8 +51,9 @@ public class RedLeft extends LinearOpMode {
     Integer gearratio = 40;
     Double diameter = 4.125;
     Double cpi = (cpr * gearratio)/(Math.PI * diameter); //counts per inch, 28cpr * gear ratio / (2 * pi * diameter (in inches, in the center))
-    Double bias = 1.075;//default 0.8
-    Double meccyBias = 1.189;//change to adjust only strafing movement
+    // 1 CHAD tick should be 1 inch but this might not actually be the case
+    Double bias = .717; //default 0.8
+    Double meccyBias = .795; //change to adjust only strafing movement
     //
     Double conversion = cpi * bias;
     Boolean exit = false;
@@ -68,245 +70,135 @@ public class RedLeft extends LinearOpMode {
         MIDDLE, // B
         RIGHT // C
     }
-
+// initializing and running autonomous
     public void runOpMode(){
         //
         initGyro();
-        //
+        
+        // sets variables for each motor and servo
         frontleft = hardwareMap.dcMotor.get("frontLeftDrive");
         frontright = hardwareMap.dcMotor.get("frontRightDrive");
         backleft = hardwareMap.dcMotor.get("backLeftDrive");
         backright = hardwareMap.dcMotor.get("backRightDrive");
         
       arm = new Arm(Arm.armRunMode.AUTONOMOUS, this, hardwareMap, telemetry);
+      claw = new Claw(hardwareMap);
 
-
+// reverses the direction of left wheels
         frontleft.setDirection(DcMotorSimple.Direction.REVERSE);
         backleft.setDirection(DcMotorSimple.Direction.REVERSE); 
      
      //Turns on camera   
          initCV();
-         
+         telemetry.addLine("Ready and waiting!");
+         telemetry.update();
 
 
         //
         waitForStart();
         
-       //Gets analysis from pipeline 
-         findCup();
+        //
+        //
+        // BEGIN MOVEMENT
+        //
+        //
+        
+        //Grasps starting block 
+        claw.closeClaw();  
+        
+        //Gets analysis from pipeline 
+        findCup();
 
-//Shows analysis in telemetry (this is mostly a testing thing)
-         telemetry.addData("Position", cupPos);
+        //Shows above analysis in telemetry (this is mostly a testing thing)
+        telemetry.addData("Position", cupPos);
+        telemetry.addData("Box x", pipeline.box1xfinal);
+        telemetry.addData("Box y", pipeline.box1yfinal);
+        telemetry.addData("Deviation", pipeline.min_deviation);
+        telemetry.addData("Saturation", pipeline.finalsat);
+        telemetry.addData("Hue", pipeline.besthue);
+        telemetry.update();
 
-         telemetry.update();
+        //Moves arm motor to the position that corresponds to the cup position 
+        switch(cupPos) {
+            case LEFT:  
+                arm.autoPositions(Arm.positionOption.BOTTOM);
+                break;
+            case MIDDLE:  
+                arm.autoPositions(Arm.positionOption.MIDDLE);
+                break;
+            case RIGHT: 
+                arm.autoPositions(Arm.positionOption.OVERSHOOT);
+                break;
+        }
+        telemetry.update();
+
+
+        //Motion via CHAD
         //
 
-
-
-//Moves arm motor to a certain position based on where the cup is 
-
-//if (cupPos == CupPosition.LEFT) {
-// arm.autoPositions(1);
-//} else if (cupPos == CupPosition.MIDDLE) {
-// arm.autoPositions(2);    
-//} else if (cupPos == CupPosition.RIGHT) {
-// arm.autoPositions(3);    
-//}
-
-//
-
-
-        
-        
-
-
-
-//Motion via CHAD
-         //
-        
-    moveToPosition(1, 0.3);
-    //
-    strafeToPosition(-10.0, 0.3);
-    //
-    moveToPosition(25.5, 0.3);
-    //
-    turnWithGyro(90, 0.2);
-    //
-    moveToPosition(18, 0.2);
-    //
-    sleep(1500);
-    //
-    moveToPosition(-18, 0.3);
-    //
-    strafeToPosition(15.5, 0.3);
-    //
-    moveToPosition(8, 0.3);
-    //
-    strafeToPosition(13.5, 0.3);
-    //
-    moveToPosition(46, 0.7);
-}
-    
-    //Image pipeline
-    public static class WhichPosition extends OpenCvPipeline {
-    
-    //Defines possible position outcomes
-    public enum Position
-    {
-        LEFT,
-        MIDDLE,
-        RIGHT
-    }
-
-        //Defines dimensions for the boxes
-        final int REGION_WIDTH = 25;
-        final int REGION_HEIGHT = 30;
-
-        //Defines starting points for the first box
-        public static int box1x = 105;
-        public static int box1y = 180;
-
-        //Defines a Mat specifically for the first box
-        Mat box1_Hue;
-
-        //Defines an int to take the hue of the first box
-        int box1_average_hue;
-
-        
-
-        //Defines an anchor point for the first box using the dimensions
-        final Point BOX1_TOPLEFT_ANCHOR_POINT = new Point(box1x, box1y);
-            
-        //Defines the two points used to draw the first box
-        Point box1_pointA = new Point(
-            BOX1_TOPLEFT_ANCHOR_POINT.x,
-            BOX1_TOPLEFT_ANCHOR_POINT.y);
-        Point box1_pointB = new Point(
-            BOX1_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
-            BOX1_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
-
-        //We repeat our steps for the second box
-        public static int box2x = 195;
-        public static int box2y = 175;
-
-        Mat box2_Hue;
-
-        int box2_average_hue;
-
-        final Point BOX2_TOPLEFT_ANCHOR_POINT = new Point(box2x, box2y);
-            
-        Point box2_pointA = new Point(
-            BOX2_TOPLEFT_ANCHOR_POINT.x,
-            BOX2_TOPLEFT_ANCHOR_POINT.y);
-        Point box2_pointB = new Point(
-            BOX2_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
-            BOX2_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
-            
-// And the third
-        public static int box3x = 285;
-        public static int box3y = 170;
+        moveToPosition(1.5, 0.2);
+        //
+        //turn off camera and strafes 
+        webcam.stopStreaming();
+        webcam.closeCameraDevice();
+        strafeToPosition(32.5, 0.2);
         //
 
-        Mat box3_Hue;
+        //based on cup position, moves to a certain position closer or further from Alliance shipping hub, lets go of 
+        if (cupPos == CupPosition.LEFT) {
+            moveToPosition(21, 0.2);
+            claw.openClaw();
+            sleep(500);
+            claw.closeClaw();
+            moveToPosition(-6, 0.2);
+            turnWithGyro(90, 0.2);
+        } else if (cupPos == CupPosition.MIDDLE) {
+            moveToPosition(22.25, 0.2);
+            claw.openClaw();
+            sleep(500);
+            claw.closeClaw();
+            moveToPosition(-6, 0.2);
+            turnWithGyro(90,.2);
+        } else if (cupPos == CupPosition.RIGHT) {
+            moveToPosition(24.8, 0.2);
+         /*   turnWithGyro(180, 0.2);
+            sleep(750);
+            arm.autoPositions(3);
+            moveToPosition(-7, 0.3);
+                  moveToPosition(-7.2, 0.1);
+*/
+            arm.autoPositions(Arm.positionOption.TOP);
+            claw.openClaw();
+            sleep(1000);
+            arm.autoPositions(Arm.positionOption.OVERSHOOT);
+            sleep(500);
+            claw.closeClaw();
+            moveToPosition(-3, 0.2);
+            turnWithGyro(90, 0.2);
+        }
+        //
 
-        int box3_average_hue;
-
-        final Point BOX3_TOPLEFT_ANCHOR_POINT = new Point(box3x, box3y);
-            
-        Point box3_pointA = new Point(
-            BOX3_TOPLEFT_ANCHOR_POINT.x,
-            BOX3_TOPLEFT_ANCHOR_POINT.y);
-        Point box3_pointB = new Point(
-            BOX3_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
-            BOX3_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
-        
-        // Sets ideal hue
-        int HueGoal = 70;
-
-        // ints to hold distance from hue goal
-        int box1_deviation;
-        int box2_deviation;
-        int box3_deviation;
-    
-        //Defines colors to draw boxes with
-        final Scalar RED = new Scalar(225, 0, 0);
-        
-        final Scalar WHITE = new Scalar(225, 225, 225);
-
-        final Scalar BLACK = new Scalar(0,0,0);
-
-        // Sets up a variable to store our analysis and sets it to a default (what this is doesn't matter)
-        private volatile Position position = Position.MIDDLE;  
-
-
-// Actually does the image processing  
-    @Override
-    public Mat processFrame(Mat inputMat) {
-        //Converts to HSV
-        Imgproc.cvtColor(inputMat, inputMat, Imgproc.COLOR_RGB2HSV);
-
-            //Sets the box1 mat to the stuff in box1
-            box1_Hue = inputMat.submat(new Rect(box1_pointA, box1_pointB));
-
-            //Takes the average hue of box1
-            box1_average_hue = (int) Core.mean(box1_Hue).val[0];
-
-             //Repeats for box 2
-             box2_Hue = inputMat.submat(new Rect(box2_pointA, box2_pointB));
-
-             box2_average_hue = (int) Core.mean(box2_Hue).val[0];
-
-               //And box 3
-               box3_Hue = inputMat.submat(new Rect(box3_pointA, box3_pointB));
-
-               box3_average_hue = (int) Core.mean(box3_Hue).val[0];
-
-// Sets deviation from the distance of the average hue to the ideal
-               box1_deviation = Math.abs(box1_average_hue - HueGoal);
-               box2_deviation = Math.abs(box2_average_hue - HueGoal);
-               box3_deviation = Math.abs(box3_average_hue - HueGoal);
-    
-            //Checks which box has the least deviation from the ideal hue, and gives that as the box with the element in it
-            if (box1_deviation < box2_deviation && box1_deviation<box3_deviation) {
-                position = Position.LEFT;
-            } else if (box2_deviation < box3_deviation) {
-                position = Position.MIDDLE;
-            } else {
-                    position = Position.RIGHT;
-                }
-                
-           
-            //Draws box1
-            Imgproc.rectangle(
-                inputMat, // What to draw on
-                box1_pointA, // First point which defines the rectangle
-                box1_pointB, // Second point which defines the rectangle
-                RED, // The color the rectangle is drawn in
-                2); // Thickness of the rectangle lines
-
-                //Draws box2
-            Imgproc.rectangle(
-                inputMat, // What to draw on
-                box2_pointA, // First point which defines the rectangle
-                box2_pointB, // Second point which defines the rectangle
-                WHITE, // The color the rectangle is drawn in
-                2); // Thickness of the rectangle lines
-                            
-
-                             //And box 3
-                             Imgproc.rectangle(
-                                inputMat, // What to draw on
-                                box3_pointA, // First point which defines the rectangle
-                                box3_pointB, // Second point which defines the rectangle
-                                BLACK, // The color the rectangle is drawn in
-                                2); // Thickness of the rectangle lines
-
-        return inputMat;
+        //
+        strafeToPosition(25, 0.4);
+        //
+        frontleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontleft.setPower(0.8);
+        frontright.setPower(0.75);
+        backleft.setPower(0.8);
+        backright.setPower(0.75);
+        //
+        sleep(3500);
+        strafeToPosition(-30, 0.5);
+        //
+        arm.autoPositions(Arm.positionOption.GROUND);
     }
     
-}
+ 
 
-//Function to turn on camera
+//Function to turn on camera and me ;)
  private void initCV() {
      // Sets variable for the camera id
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -314,8 +206,8 @@ public class RedLeft extends LinearOpMode {
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
         // Combines the above to create a webcam that we will use
         webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
-        //Sets our pipeline to view images through as the one we want
-        pipeline = new WhichPosition();
+        //(Boundary between regions 1 and 2, Boundary between 2 and 3, Far left, Far top, Far right, Far bottom, opmode, the side we're on)
+        pipeline = new LoopyPipeline(175, 240, 90, 130, 290, 145, this, LoopyPipeline.Side.RED);
         webcam.setPipeline(pipeline);
 
 // Turns on the webcam
@@ -324,7 +216,8 @@ public class RedLeft extends LinearOpMode {
             @Override
             public void onOpened()
             {
-                webcam.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT);
+                //Disable the below during a tournament
+               webcam.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT);
             }
             //This is needed so it knows what to do if something goes wrong
             public void onError(int thing){
@@ -335,26 +228,27 @@ public class RedLeft extends LinearOpMode {
 
     }
     
-    private void findCup() {
+    
+     private void findCup() {
 
-//Takes some time so we can run everything through the pipeline
-        sleep(4000);
+        //Takes some time so we can run everything through the pipeline
+        sleep(3500);
 
-        WhichPosition.Position cupPosition = pipeline.position;
+        LoopyPipeline.Position cupPosition = pipeline.position;
         
-//Sets cupPos to a corresponding position basesd on pipeline analysis
+        //Sets cupPos to a corresponding position basesd on pipeline analysis
 
-        if (cupPosition == WhichPosition.Position.LEFT)
+        if (cupPosition == LoopyPipeline.Position.LEFT)
         {
             cupPos = CupPosition.LEFT;
 
         }
-    else if (cupPosition == WhichPosition.Position.RIGHT) 
+       else if (cupPosition == LoopyPipeline.Position.RIGHT) 
         {
             cupPos = CupPosition.RIGHT;
 
         }
-      else if (cupPosition == WhichPosition.Position.MIDDLE) 
+        else if (cupPosition == LoopyPipeline.Position.MIDDLE) 
         {
            cupPos = CupPosition.MIDDLE;
 

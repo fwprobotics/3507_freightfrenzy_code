@@ -121,13 +121,13 @@ public class RedRight extends LinearOpMode {
         //Moves arm motor to the position that corresponds to the cup position 
         switch(cupPos) {
             case LEFT:  
-                arm.autoPositions(Arm.autoOptions.BOTTOM);
+                arm.autoPositions(Arm.positionOption.BOTTOM);
                 break;
             case MIDDLE:  
-                arm.autoPositions(Arm.autoOptions.MIDDLE);
+                arm.autoPositions(Arm.positionOption.MIDDLE);
                 break;
             case RIGHT: 
-                arm.autoPositions(Arm.autoOptions.OVERSHOOT);
+                arm.autoPositions(Arm.positionOption.OVERSHOOT);
                 break;
         }
         telemetry.update();
@@ -138,10 +138,10 @@ public class RedRight extends LinearOpMode {
 
         moveToPosition(1.5, 0.2);
         //
-        //turn off camera and strafes tee hee lol
+        //turn off camera and strafes 
         webcam.stopStreaming();
         webcam.closeCameraDevice();
-        strafeToPosition(-17, 0.2);
+        strafeToPosition(-17.5, 0.2);
         //
 
         //based on cup position, moves to a certain position closer or further from Alliance shipping hub, lets go of 
@@ -167,10 +167,10 @@ public class RedRight extends LinearOpMode {
             moveToPosition(-7, 0.3);
                   moveToPosition(-7.2, 0.1);
 */
-            arm.autoPositions(Arm.autoOptions.TOP);
+            arm.autoPositions(Arm.positionOption.TOP);
             claw.openClaw();
             sleep(1000);
-            arm.autoPositions(Arm.autoOptions.OVERSHOOT);
+            arm.autoPositions(Arm.positionOption.OVERSHOOT);
             sleep(500);
             claw.closeClaw();
             moveToPosition(-3, 0.2);
@@ -193,7 +193,7 @@ public class RedRight extends LinearOpMode {
         sleep(2000);
         strafeToPosition(-30, 0.5);
         //
-        arm.autoPositions(Arm.autoOptions.GROUND);
+        arm.autoPositions(Arm.positionOption.GROUND);
     }
     
  

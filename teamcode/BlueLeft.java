@@ -114,13 +114,13 @@ public class BlueLeft extends LinearOpMode {
         //Moves arm motor to a certain position based on where the cup is 
         switch(cupPos) {
             case LEFT:  
-                arm.autoPositions(Arm.autoOptions.BOTTOM);
+                arm.autoPositions(Arm.positionOption.BOTTOM);
                 break;
             case MIDDLE:  
-                arm.autoPositions(Arm.autoOptions.MIDDLE);
+                arm.autoPositions(Arm.positionOption.MIDDLE);
                 break;
             case RIGHT: 
-                arm.autoPositions(Arm.autoOptions.OVERSHOOT);
+                arm.autoPositions(Arm.positionOption.OVERSHOOT);
                 break;
         }
         telemetry.update();
@@ -154,10 +154,10 @@ public class BlueLeft extends LinearOpMode {
         } else if (cupPos == CupPosition.RIGHT) {
             //General idea here is to overshoot the arm and then come down to drop the box
             moveToPosition(25.75, 0.2);
-            arm.autoPositions(Arm.autoOptions.TOP);
+            arm.autoPositions(Arm.positionOption.TOP);
             claw.openClaw();
             sleep(1000);
-            arm.autoPositions(Arm.autoOptions.OVERSHOOT);
+            arm.autoPositions(Arm.positionOption.OVERSHOOT);
             sleep(500);
             claw.closeClaw();
             moveToPosition(-3, 0.2);
@@ -181,7 +181,7 @@ public class BlueLeft extends LinearOpMode {
         sleep(2000);
         //
         strafeToPosition(-30, 0.5);
-        arm.autoPositions(Arm.autoOptions.GROUND);
+        arm.autoPositions(Arm.positionOption.GROUND);
         
         
     }

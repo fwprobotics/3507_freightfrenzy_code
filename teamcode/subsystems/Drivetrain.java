@@ -25,9 +25,9 @@ public class Drivetrain {
     public static class TeleOpDTConstants {
         //Biases so we don't go too fast
         public static double turning_modifier = 0.70;
-        public static double y_modifier = 0.80;
-        public static double x_modifier = 0.70;
-        public static double speedFactor = 0.75;
+        public static double y_modifier = 0.95;
+        public static double x_modifier = 0.85;
+        public static double speedFactor = 0.8;
         public static double power_modifier = 0.7;
 
     }
@@ -62,8 +62,8 @@ public class Drivetrain {
         double slowModeMult = slowModeControl ? 0.3 : 1;
 
         //Sets motor values based on adding and subtracting joystick values
-        double LeftX = cubeInput(-leftStickX, TeleOpDTConstants.speedFactor);
-        double LeftY = cubeInput(-leftStickY, TeleOpDTConstants.speedFactor);
+        double LeftX = cubeInput(-leftStickX, TeleOpDTConstants.speedFactor) * TeleOpDTConstants.x_modifier;
+        double LeftY = cubeInput(-leftStickY, TeleOpDTConstants.speedFactor) * TeleOpDTConstants.y_modifier;
         double RightX = cubeInput(-rightStickX, TeleOpDTConstants.speedFactor) * TeleOpDTConstants.turning_modifier;
 
         double frontLeftVal = ((LeftY - RightX) - LeftX);

@@ -16,9 +16,9 @@ public class Claw {
     
     public void TeleopControl(boolean press){
         
-        if (press == true) {
-            if (pressed == false){
-                if (toggle == false){
+        if (press) {
+            if (!pressed){
+                if (!toggle){
                     toggle = true;
                 } else {
                     toggle = false;
@@ -29,7 +29,7 @@ public class Claw {
             pressed = false;
         }
         
-        if (toggle == false) {
+        if (!toggle) {
             closeClaw();
         } else {
             openClaw();
@@ -40,7 +40,7 @@ public class Claw {
               ClawServo.setPosition(1);
     }
        public static void openClaw() {
-              ClawServo.setPosition(0.5);
+              ClawServo.setPosition(0.6);
     }
 
 }

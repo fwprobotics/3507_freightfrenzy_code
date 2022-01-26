@@ -34,12 +34,20 @@ public class Arm{
         TELEOP
     }
     
-    public enum autoOptions {
-        GROUND,
-        BOTTOM,
-        MIDDLE,
-        OVERSHOOT,
-        TOP
+    public enum positionOption {
+        GROUND (75),
+        BOTTOM (340),
+        MIDDLE (700),
+        OVERSHOOT (1150),
+        TOP (750),
+        BACK (2250);
+        
+        private final int goalPos;
+        positionOption(int goalPos) {
+            this.goalPos = goalPos;
+        }
+        
+        private int goalPos() {return goalPos;}
     }
     
  
@@ -81,8 +89,43 @@ public class Arm{
    // PIDSet();
   
 
-    public void teleOpControl(double input, boolean up, boolean down, boolean side, boolean y){
+    public void teleOpControl(double input, boolean up, boolean down, boolean side, boolean y, boolean back){
         
+       
+      
+             positionOption ourGoal = positionOption.BACK;
+             if (down) {
+                 ourGoal = positionOption.BOTTOM;
+             }
+             if (up) {
+                 ourGoal = positionOption.BACK;
+             }
+             if (side) {
+                 ourGoal = positionOption.TOP;
+             }
+             if (y) {
+                 ourGoal = positionOption.GROUND;
+             } 
+            if (down || up || side || y) {
+            armMotor.setTargetPosition(ourGoal.goalPos);
+            armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
+            armMotor.setPower(ArmConstants.arm_power);
+            } else if (!armMotor.isBusy()) {
+            armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            armMotor.setPower(input * ArmConstants.arm_modifier);
+            realTelemetry.addData("Arm power:", input * ArmConstants.arm_modifier);
+            realTelemetry.addData("Arm Encoder Count:", armMotor.getCurrentPosition());
+            realTelemetry.addData("PID Coefficients", armMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION));
+           
+        }
+        
+         if (back) {
+            armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            
+        }
+       
+       /* 
         if (down == true) {
             armMotor.setTargetPosition(200);
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
@@ -96,7 +139,7 @@ public class Arm{
             armMotor.setPower(ArmConstants.arm_power);
         }
         if (side == true){
-            armMotor.setTargetPosition(790);
+            armMotor.setTargetPosition(780);
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
             armMotor.setPower(ArmConstants.arm_power);
         }
@@ -113,12 +156,23 @@ public class Arm{
         realTelemetry.addData("Arm Encoder Count:", armMotor.getCurrentPosition());
         realTelemetry.addData("PID Coefficients", armMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION));
         }
+        
+        if (back == true) {
+            armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            
+        }
+        */
     }
     
     
-    public void autoPositions(autoOptions position) {
+    public void autoPositions(positionOption position) {
         
-        switch(position){
+          armMotor.setTargetPosition(position.goalPos);
+          armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
+          armMotor.setPower(ArmConstants.arm_power);
+        
+     /*   switch(position){
             case BOTTOM:
                 armMotor.setTargetPosition(375);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
@@ -140,13 +194,13 @@ public class Arm{
                 armMotor.setPower(ArmConstants.arm_power);
                 break;
             case GROUND:
-                armMotor.setTargetPosition(0);
+                armMotor.setTargetPosition(75);
                 armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
                 armMotor.setPower(ArmConstants.arm_power);
                 break;
-        }
+        } 
         
-        /*Low drop off position
+        Low drop off position
         if (position == 1){
             armMotor.setTargetPosition(290);
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); 
